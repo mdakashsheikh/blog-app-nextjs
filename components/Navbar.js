@@ -3,9 +3,11 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image';
 import akash from '@/public/img/img1.png';
-import { AiOutlineClose } from 'react-icons/ai'
+import { AiOutlineClose } from 'react-icons/ai';
+import { usePathname } from 'next/navigation';
 
 const Navbar = () => {
+    const pathname = usePathname()
     const loggedIn = true;
     const [showDropdown, setShowDropdown] = useState(false);
 
@@ -22,13 +24,13 @@ const Navbar = () => {
 
             <ul className='flex items-center gap-3'>
                 <li>
-                    <Link href='/blog'>Blog</Link>
+                    <Link href='/blog' className={ pathname === '/blog' ? 'text-primaryColor font-bold' : ''}>Blog</Link>
                 </li>
                 {
                     loggedIn ? (
                         <>
                             <li>
-                                <Link href='/create-blog'>Create</Link>
+                                <Link href='/create-blog' className={ pathname === '/create-blog' ? 'text-primaryColor font-bold' : ''}>Create</Link>
                             </li>
                             <li>
                                 <div className='relative'>
@@ -52,10 +54,10 @@ const Navbar = () => {
                     ) : (
                         <>
                             <li>
-                                <Link href='/login'>Login</Link>
+                                <Link href='/login' className={ pathname === '/login' ? 'text-primaryColor font-bold' : ''}>Login</Link>
                             </li>
                             <li>
-                                <Link href='/signup'>Sign Up</Link>
+                                <Link href='/signup' className={ pathname === '/signup' ? 'text-primaryColor font-bold' : ''}>Sign Up</Link>
                             </li>
                         </>
                     )
