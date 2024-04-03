@@ -36,6 +36,13 @@ const SighupForm = () => {
             return;
         }
 
+        const pattern = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+
+        if(!pattern.test(email)) {
+            setError('Please enter a valid email.')
+            return;
+        }
+
         if(password.length < 6) {
             setError('Password must be at least 6 characters long.')
             return;
