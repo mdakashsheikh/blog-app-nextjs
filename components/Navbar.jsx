@@ -5,8 +5,11 @@ import Image from 'next/image';
 import akash from '@/public/img/img1.png';
 import { AiOutlineClose } from 'react-icons/ai';
 import { usePathname } from 'next/navigation';
+import { signOut, useSession } from 'next-auth/react';
 
 const Navbar = () => {
+    const { data: session, status } = useSession();
+
     const pathname = usePathname()
     const loggedIn = false;
     const [showDropdown, setShowDropdown] = useState(false);
@@ -27,7 +30,7 @@ const Navbar = () => {
                     <Link href='/blog' className={ pathname === '/blog' ? 'text-primaryColor font-bold' : ''}>Blog</Link>
                 </li>
                 {
-                    loggedIn ? (
+                    session?.user ? (
                         <>
                             <li>
                                 <Link href='/create-blog' className={ pathname === '/create-blog' ? 'text-primaryColor font-bold' : ''}>Create</Link>
@@ -43,7 +46,7 @@ const Navbar = () => {
                                     />
                                     { showDropdown && (
                                         <div className='absolute top-0 right-0 bg-primaryColorLight p-5'>
-                                            <AiOutlineClose className='w-full cursor-pointer' onClick={handlehideDropdown}/>
+                                            <AiOutlineClose className='w-full cursor-pointer' onClick={() => { signOut(); handlehideDropdown();}}/>
                                             <button>Logout</button>
                                             <Link href='/user'>Profile</Link>
                                         </div>
