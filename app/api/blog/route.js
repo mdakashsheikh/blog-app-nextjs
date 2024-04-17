@@ -29,3 +29,21 @@ export async function POST(req) {
         return NextResponse.json({ message: 'POST error (create blog)'})
     }
 }
+
+export async function GET(req) {
+    await connectDB()
+
+    try {
+        const blogs = await Blog.find({}).populate({
+            path: 'authorId',
+            select: '-password'
+        }).sort({ createdAt: -1 })
+
+        return NextResponse.json(blogs);
+
+    } catch (error) {
+        return NextResponse.json({ message: 'GET error'}, {
+            status: 500
+        })
+    }
+}
