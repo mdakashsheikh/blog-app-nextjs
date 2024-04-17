@@ -21,8 +21,8 @@ const initialState = {
 
 const CreateBlog = () => {
 
-    const CLOUD_NAME=dykjioxrp
-    const UPLOAD_PRESET=nextjs_blog_images
+    const CLOUD_NAME='dykjioxrp'
+    const UPLOAD_PRESET='nextjs_blog_images'
 
     const [state, setState] = useState(initialState);
     const [error, setError] = useState('');
@@ -95,43 +95,77 @@ const CreateBlog = () => {
             setError('')
             setSuccess('');
             const image = await uploadImage();
+
+            const newBlog = {
+                title,
+                description,
+                excerpt,
+                quote,
+                category,
+                image,
+                authorId: session?.user?._id
+            }
+
+            const response = await fetch('http://localhost:3000/api/blog', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.user?.accessToken}`
+                },
+                method: 'POST',
+                body: JSON.stringify(newBlog)
+            })
+
+            if(response?.status === 201) {
+                setSuccess('Blog Created Successfully.');
+                setTimeout(() => {
+                    router.refresh()
+                    router.push('/blog')
+                }, 1500)
+            } else {
+                setError('Error occurred while creating blog.')
+            }
+
         } catch (error) {
-            
+            console.log(error)
+            setError('Error occurred while creating blog.')
         }
+
+        setIsLoading(false)
     }
 
     const uploadImage = async () => {
         if(!state.photo) return;
-
+    
         const formdata = new FormData();
-
+    
         formdata.append('file', state.photo);
-        formdata.append('upload_preset', UPLOAD_PRESET)
-
-        try {
-            const res = await fetch(`https://api/cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                method: 'POST',
+        formdata.append("upload_preset", UPLOAD_PRESET);
+    
+        try{
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: "POST",
                 body: formdata
-            })
-
+            });
+        
             const data = await res.json();
             const image = {
-                id: data['public_id'],
+                id: data["public_id"],
                 url: data['secure_url']
             }
-
-            return image
-        } catch (error) {
+        
+            return image;
+        } catch(error) {
             console.log(error)
         }
     }
+    
     return (
         <section className='container max-w-3xl'>
             <h2 className='mb-5'>
                 <span className='special-word'>Create</span>Blog
             </h2>
 
-            <form className='space-y-5'>
+            <form onSubmit={handleSubmit} className='space-y-5'>
                 <Input 
                     label='Title' 
                     type='text' 
@@ -183,15 +217,22 @@ const CreateBlog = () => {
                     <label className='block mb-2 text-sm font-medium'>
                         Upload Image
                     </label>
-                    <input type='file' name='photo' accept='image/*'/>
-                    <Image
-                        src={demoImage}
-                        alt='Sample Image'
-                        width={0}
-                        height={0}
-                        sizes='100vw'
-                        className='w-32 mt-5'
-                    />
+                    <input onChange={handleChange} type='file' name='photo' accept='image/*'/>
+
+                    {state.photo && (
+                        <div>
+                            <Image
+                                src={URL.createObjectURL(state.photo)}
+                                priority
+                                alt='Sample Image'
+                                width={0}
+                                height={0}
+                                sizes='100vw'
+                                className='w-32 mt-5'
+                            />
+                        </div>
+                    )}
+                    
                 </div>
 
                 {
