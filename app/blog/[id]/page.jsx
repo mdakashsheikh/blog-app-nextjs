@@ -17,6 +17,7 @@ import {
 import { BsFillPencilFill, BsTrash } from 'react-icons/bs'
 import demoImage from '@/public/img/demo_image.jpg'
 import Input from '@/components/Input'
+import { deletePhoto } from "@/action/uploadAction";
 
 const splitParagraph = (paragraph) => {
     const MIN_LENGTH = 280;
@@ -49,6 +50,7 @@ const splitParagraph = (paragraph) => {
 
 const BlogDetails = ({params}) => {
     const [blogDetails, setBlogDetails] = useState({});
+    const [isDeleting, setIsDeleting] = useState(false)
 
     const router = useRouter();
     const { data: session, status} = useSession();
@@ -72,6 +74,34 @@ const BlogDetails = ({params}) => {
     const time = moment(timeStr)
     const formattedTime = time.format('MMMM Do YYYY')
 
+    const handleBlogDelete = async (imageId) => {
+        try {
+            const confirmModel = window.confirm('Are you sure you want to delete your blog?')
+
+            if(confirmModel) {
+                setIsDeleting(true)
+
+                const response = await fetch(`http://localhost:3000/api/blog/${params.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: `Bearer ${session?.user?.accessToken}`
+                    }
+                })
+
+                if(response?.status === 200) {
+                    await deletePhoto(imageId);
+                    router.refresh()
+                    router.push('/blog')
+                }
+            }
+
+            setIsDeleting(false);
+
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     return (
         <section className="container max-w-3xl">
             {blogDetails?.authorId?._id.toString() === session?.user?._id.toString() && (
@@ -81,7 +111,7 @@ const BlogDetails = ({params}) => {
                         Edit
                     </Link>
 
-                    <button className="flex items-center gap-1 text-red-600">
+                    <button onClick={() => handleBlogDelete(blogDetails?.image?.id)} className="flex items-center gap-1 text-red-600">
                         <BsTrash/>
                         Delete
                     </button>
