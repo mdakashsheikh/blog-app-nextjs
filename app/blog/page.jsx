@@ -7,7 +7,7 @@ async function fetchBlogs() {
         cache: 'no-store'
     })
 
-    if(!res.ok) {
+    if(!res?.status === 200) {
         throw new Error('Failed to fetch data')
     }
 

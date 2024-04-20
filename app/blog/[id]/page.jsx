@@ -50,7 +50,9 @@ const splitParagraph = (paragraph) => {
 
 const BlogDetails = ({params}) => {
     const [blogDetails, setBlogDetails] = useState({});
-    const [isDeleting, setIsDeleting] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isLiked, setIsLiked] = useState(false);
+    const [blogLikes, setBlogLikes] = useState(0)
 
     const router = useRouter();
     const { data: session, status} = useSession();
@@ -60,6 +62,8 @@ const BlogDetails = ({params}) => {
             const response = await fetch(`http://localhost:3000/api/blog/${params.id}`);
             const blog = await response.json();
             setBlogDetails(blog);
+            setIsLiked(blog?.likes?.includes(session?.user?._id))
+            setBlogLikes(blog?.likes?.length || 0)
 
         } catch (error) {
             console.log(error);
@@ -102,6 +106,36 @@ const BlogDetails = ({params}) => {
         }
     }
 
+    const handleLike = async() => {
+        if(!session?.user) {
+            alert('Please login before liking.')
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/blog/${params.id}/like`, {
+                method: 'PUT',
+                headers: {
+                    Authorization: `Bearer ${session?.user?.accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(null)
+            })
+
+            if(response.status ===  200) {
+                setIsLiked(prev => !prev)
+                setBlogLikes(prev => (isLiked ? prev - 1 : prev + 1))
+            } else {
+                console.log('Request failed with status:', response.status)
+            }
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    console.log(blogLikes)
+
     return (
         <section className="container max-w-3xl">
             {blogDetails?.authorId?._id.toString() === session?.user?._id.toString() && (
@@ -113,7 +147,7 @@ const BlogDetails = ({params}) => {
 
                     <button onClick={() => handleBlogDelete(blogDetails?.image?.id)} className="flex items-center gap-1 text-red-600">
                         <BsTrash/>
-                        Delete
+                        { isDeleting ? 'Deleting...' : 'Delete'}
                     </button>
                 </div>
             )}
@@ -192,10 +226,16 @@ const BlogDetails = ({params}) => {
             <div className="py-12">
                 <div className="flex gap-10 items-center text-xl justify-center">
                     <div className="flex items-center gap-1">
-                        <p>12</p>
+                        <p>{blogLikes}</p>
 
-                        <AiFillHeart size={20} color="#ed5784" cursor='pointer' />
-                        <AiFillHeart size={20} cursor='pointer' />
+                        {
+                            isLiked ? (
+                                <AiFillHeart onClick={() => handleLike} size={20} color="#ed5784" cursor='pointer' />
+                            ) : (
+                                <AiOutlineHeart onClick={() => handleLike} size={20} cursor='pointer' />
+                            )
+                        }
+
                     </div>
 
                     <div className="flex items-center gap-1">
